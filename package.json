@@ -4,7 +4,13 @@
     "truffle-hdwallet-provider": "^1.0.6"
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.1.2",
+    "@commitlint/config-conventional": "^17.1.0",
+    "husky": "^8.0.0",
     "prettier": "^2.7.1",
     "prettier-plugin-solidity": "^1.0.0-beta.24"
+  },
+  "scripts": {
+    "prepare": "husky install"
   }
 }
