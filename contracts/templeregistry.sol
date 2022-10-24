@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 contract TempleRegistry {
     event NewTemple(uint256 templeId, string name);
 
-    uint8 templeEnergy = 100;
+    uint8 TEMPLE_ENERGY = 100;
 
     struct Temple {
         string name;
@@ -31,14 +31,14 @@ contract TempleRegistry {
         waterEnergy = uint8(
             uint256(
                 keccak256(abi.encodePacked(msg.sender, block.difficulty, block.timestamp, 'water'))
-            ) % 100
+            ) % TEMPLE_ENERGY
         );
         fireEnergy = uint8(
             uint256(
                 keccak256(abi.encodePacked(msg.sender, block.difficulty, block.timestamp, 'fire'))
-            ) % (100 - waterEnergy)
+            ) % (TEMPLE_ENERGY - waterEnergy)
         );
-        grassEnergy = 100 - waterEnergy - fireEnergy;
+        grassEnergy = TEMPLE_ENERGY - waterEnergy - fireEnergy;
         return (waterEnergy, fireEnergy, grassEnergy);
     }
 
