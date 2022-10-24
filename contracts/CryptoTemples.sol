@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.17;
-import './templeregistry.sol';
+import './templehelpers.sol';
 
-contract CryptoTemples is TempleRegistry {}
+contract CryptoTemples is TempleHelpers {}

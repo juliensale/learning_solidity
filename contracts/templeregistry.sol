@@ -14,13 +14,13 @@ contract TempleRegistry {
         uint256 exp;
     }
 
-    Temple[] public temples;
+    Temple[] internal temples;
 
     mapping(address => uint256) public ownerToTemple;
     mapping(address => bool) public addressOwnsTemple;
 
     function _getRandomEnergy()
-        private
+        internal
         view
         returns (
             uint8 waterEnergy,
