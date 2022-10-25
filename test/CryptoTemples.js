@@ -83,5 +83,27 @@ contract('CryptoTemplesTest', (accounts) => {
                     parseInt(result.grassEnergy),
             ).to.equal(100)
         })
+
+        it('should get exp when winning', async () => {
+            await contractInstance.test_winningAttack(alice, bob)
+            const result = await contractInstance.getTemple({ from: alice })
+            expect(+result.exp).to.be.greaterThan(0)
+        })
+
+        it('should refresh the level when winning', async () => {
+            await contractInstance.test_winningAttack(alice, bob)
+            const result = await contractInstance.getTemple({ from: alice })
+            expect(+result.level).to.equal(2)
+        })
+
+        it('should not add a level after every fight', async () => {
+            await contractInstance.test_winningAttack(alice, bob)
+            await contractInstance.test_winningAttack(alice, bob)
+            await contractInstance.test_winningAttack(alice, bob)
+            await contractInstance.test_winningAttack(alice, bob)
+            await contractInstance.test_winningAttack(alice, bob)
+            const result = await contractInstance.getTemple({ from: alice })
+            expect(+result.level).to.equal(4)
+        })
     })
 })

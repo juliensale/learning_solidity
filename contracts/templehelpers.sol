@@ -2,9 +2,11 @@
 pragma solidity 0.8.17;
 import './templeregistry.sol';
 import './safemath.sol';
+import './safemath8.sol';
 
 contract TempleHelpers is TempleRegistry {
     using SafeMath for uint256;
+    using SafeMath8 for uint8;
 
     function _getTempleByAddress(address _address) internal view returns (Temple memory) {
         require(addressOwnsTemple[_address], 'No temple is assigned to this address.');
@@ -48,5 +50,20 @@ contract TempleHelpers is TempleRegistry {
         uint256 secondTerm = ((Ld.mul(2)).add(10));
         uint256 thirdTerm = Ld.add(La).add(10);
         return (firstTerm.mul(secondTerm).mul(secondTerm)).div(thirdTerm * thirdTerm).add(1);
+    }
+
+    function _addExp(uint256 _templeId, uint256 _exp) internal {
+        temples[_templeId].exp = temples[_templeId].exp.add(_exp);
+        if (getNextLevelExp(temples[_templeId].level) <= temples[_templeId].exp) {
+            temples[_templeId].level = temples[_templeId].level.add(1);
+        }
+    }
+
+    function _refreshTempleEnergy(uint256 _templeId) internal {
+        (uint8 waterEnergy, uint8 fireEnergy, uint8 grassEnergy) = _getRandomEnergy();
+
+        temples[_templeId].waterEnergy = waterEnergy;
+        temples[_templeId].fireEnergy = fireEnergy;
+        temples[_templeId].grassEnergy = grassEnergy;
     }
 }
