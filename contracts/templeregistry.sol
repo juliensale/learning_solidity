@@ -12,6 +12,7 @@ contract TempleRegistry {
         uint8 fireEnergy;
         uint8 grassEnergy;
         uint256 exp;
+        uint8 level;
     }
 
     Temple[] internal temples;
@@ -45,7 +46,7 @@ contract TempleRegistry {
     function createTemple(string memory _name) public {
         require(!addressOwnsTemple[msg.sender], 'A user may only have one temple.');
         (uint8 waterEnergy, uint8 fireEnergy, uint8 grassEnergy) = _getRandomEnergy();
-        temples.push(Temple(_name, waterEnergy, fireEnergy, grassEnergy, 0));
+        temples.push(Temple(_name, waterEnergy, fireEnergy, grassEnergy, 0, 1));
         uint256 id = temples.length - 1;
         addressOwnsTemple[msg.sender] = true;
         ownerToTemple[msg.sender] = id;

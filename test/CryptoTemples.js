@@ -1,18 +1,19 @@
+const { BN } = require('bn.js')
 const { expect } = require('chai')
 require('chai').use(require('chai-as-promised')).should()
 
-const CryptoTemples = artifacts.require('CryptoTemples')
+const CryptoTemplesTest = artifacts.require('CryptoTemplesTest')
 const [templeName1, templeName2, templeName3] = [
     'Alice Temple',
     "Bob's Kingdom",
     'Charlie Temple',
     'David Temple',
 ]
-contract('CryptoTemples', (accounts) => {
+contract('CryptoTemplesTest', (accounts) => {
     let [alice, bob, charlie, david] = accounts
     let contractInstance
     beforeEach(async () => {
-        contractInstance = await CryptoTemples.new()
+        contractInstance = await CryptoTemplesTest.new()
     })
 
     it('should create a zombie for two users', async () => {
@@ -49,6 +50,38 @@ contract('CryptoTemples', (accounts) => {
             await contractInstance
                 .getTemple({ from: david })
                 .should.be.rejectedWith('No temple is assigned to this address.')
+        })
+
+        /**
+         * values found in the experience table on https://bulbapedia.bulbagarden.net/wiki/Experience
+         * refering to the total experience for the slow formula
+         */
+        it('should calculate the right amout of exp required for the next level', async () => {
+            const result1 = await contractInstance.getNextLevelExp(1)
+            const result2 = await contractInstance.getNextLevelExp(2)
+            const result14 = await contractInstance.getNextLevelExp(14)
+            expect(new BN(result1).toNumber()).to.equal(10)
+            expect(new BN(result2).toNumber()).to.equal(33)
+            expect(new BN(result14).toNumber()).to.equal(4218)
+        })
+
+        it('should calculate the right amount of exp gained depending on the levels', async () => {
+            const result1_1 = await contractInstance.getGainedExp(1, 1)
+            const result1_2 = await contractInstance.getGainedExp(1, 2)
+            const result7_6 = await contractInstance.getGainedExp(7, 6)
+
+            expect(new BN(result1_1).toNumber()).to.equal(31)
+            expect(new BN(result1_2).toNumber()).to.equal(70)
+            expect(new BN(result7_6).toNumber()).to.equal(165)
+        })
+
+        it('a temple should have 100 engergy points in total', async () => {
+            const result = await contractInstance.getTemple({ from: alice })
+            expect(
+                parseInt(result.waterEnergy) +
+                    parseInt(result.fireEnergy) +
+                    parseInt(result.grassEnergy),
+            ).to.equal(100)
         })
     })
 })
