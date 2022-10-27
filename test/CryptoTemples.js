@@ -1,8 +1,10 @@
 const { BN } = require('bn.js')
 const { expect } = require('chai')
 require('chai').use(require('chai-as-promised')).should()
+const { time } = require('@openzeppelin/test-helpers')
 
 const CryptoTemplesTest = artifacts.require('CryptoTemplesTest')
+const RealMath = artifacts.require('RealMath')
 const [templeName1, templeName2, templeName3] = [
     'Alice Temple',
     "Bob's Kingdom",
@@ -13,6 +15,9 @@ contract('CryptoTemplesTest', (accounts) => {
     let [alice, bob, charlie, david] = accounts
     let contractInstance
     beforeEach(async () => {
+        const realMath = await RealMath.new()
+        await CryptoTemplesTest.detectNetwork()
+        await CryptoTemplesTest.link('RealMath', realMath.address)
         contractInstance = await CryptoTemplesTest.new()
     })
 
@@ -104,6 +109,54 @@ contract('CryptoTemplesTest', (accounts) => {
             await contractInstance.test_winningAttack(alice, bob)
             const result = await contractInstance.getTemple({ from: alice })
             expect(+result.level).to.equal(4)
+        })
+
+        it('should run the attack function correctly', async () => {
+            const result = await contractInstance.attack(bob, 0, { from: alice })
+            expect(result.receipt.status).to.be.true
+        })
+
+        it('should fail if the _type is invalid', async () => {
+            await contractInstance.attack(bob, -1, { from: alice }).should.be.rejected
+            await contractInstance
+                .attack(bob, 3, { from: alice })
+                .should.be.rejectedWith('The _type parameter must be either 0, 1 or 2.')
+        })
+
+        it('should fail if the attacker does not have a temple', async () => {
+            await contractInstance
+                .attack(bob, 1, { from: david })
+                .should.be.rejectedWith('One user does not have a temple.')
+        })
+
+        it('should fail if the target does not have a temple', async () => {
+            await contractInstance
+                .attack(david, 2, { from: alice })
+                .should.be.rejectedWith('One user does not have a temple.')
+        })
+
+        it('should only allow one attack per day', async () => {
+            await contractInstance.attack(bob, 0, { from: alice })
+            await contractInstance
+                .attack(charlie, 0, { from: alice })
+                .should.be.rejectedWith('One can only attack once per day.')
+            await time.increase(time.duration.days(1) - time.duration.seconds(3))
+            await contractInstance
+                .attack(charlie, 0, { from: alice })
+                .should.be.rejectedWith('One can only attack once per day.')
+        })
+
+        it('should be able to attack on next day', async () => {
+            await contractInstance.attack(bob, 0, { from: alice })
+            await time.increase(time.duration.days(1))
+            const result = await contractInstance.attack(bob, 0, { from: alice })
+            expect(result.receipt.status).to.be.true
+        })
+
+        it('should not allow users to attack themselves', async () => {
+            await contractInstance
+                .attack(alice, 0, { from: alice })
+                .should.be.rejectedWith('A user cannot attack himself.')
         })
     })
 })

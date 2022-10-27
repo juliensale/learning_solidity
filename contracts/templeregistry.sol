@@ -5,6 +5,7 @@ contract TempleRegistry {
     event NewTemple(uint256 templeId, string name);
 
     uint8 TEMPLE_ENERGY = 100;
+    uint256 COOLDOWN_TIME = 1 days;
 
     struct Temple {
         string name;
@@ -13,6 +14,7 @@ contract TempleRegistry {
         uint8 grassEnergy;
         uint256 exp;
         uint8 level;
+        uint32 readyTime;
     }
 
     Temple[] internal temples;
@@ -46,7 +48,9 @@ contract TempleRegistry {
     function createTemple(string memory _name) public {
         require(!addressOwnsTemple[msg.sender], 'A user may only have one temple.');
         (uint8 waterEnergy, uint8 fireEnergy, uint8 grassEnergy) = _getRandomEnergy();
-        temples.push(Temple(_name, waterEnergy, fireEnergy, grassEnergy, 0, 1));
+        temples.push(
+            Temple(_name, waterEnergy, fireEnergy, grassEnergy, 0, 1, uint32(block.timestamp))
+        );
         uint256 id = temples.length - 1;
         addressOwnsTemple[msg.sender] = true;
         ownerToTemple[msg.sender] = id;
